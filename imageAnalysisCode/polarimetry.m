@@ -19,7 +19,7 @@ for i = 1:length(ind)
     [~,image_name,raw_ext] = fileparts(d(ind(i)).name);
     [black(i,1), saturation(i,1), wb_multipliers(i,:)] = reading_raw(image_path,image_name,raw_ext,dcraw_path);
 end
-max_black       = max(black);
+max_black       = min(black);
 max_saturation  = max(saturation);
 max_wb          = max(wb_multipliers);
 
@@ -57,10 +57,18 @@ for i = 1:length(ind)
 end
 
 %% calculate stokes parameters
+    
+tmp1    = Pol(:,:,angles(ind)==45) + Pol(:,:,angles(ind)==135);
+tmp2    = Pol(:,:,angles(ind)==0) + Pol(:,:,angles(ind)==90);
+S0      = max(tmp1,tmp2);
 
-S0 = sum(Pol(:,:,[1:4]),3);
+S0_max  = max(S0,[],'all');
+S0      = S0./S0_max;
+
 S1 = Pol(:,:,angles(ind)==0) - Pol(:,:,angles(ind)==90);
+S1 = S1./S0_max;
 S2 = Pol(:,:,angles(ind)==45) - Pol(:,:,angles(ind)==135);
+S2 = S2./S0_max;
 
 AoP     = 0.5*atan2d(S2,S1);
 AoP     = mod(AoP,180);
