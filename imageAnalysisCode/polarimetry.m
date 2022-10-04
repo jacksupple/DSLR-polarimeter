@@ -27,7 +27,7 @@ for i = 1:length(ind)
 
     [~,image_name,raw_ext] = fileparts(d(ind(i)).name);
     im = fullfile([image_path],[image_name,'.tiff']);
-    raw = double(imread(im));
+    raw = fliplr(double(imread(im)));
     
     % Linearise the image and normalise to [0,1] range using the black and
     % saturation values from the first informational run of dcraw
@@ -57,18 +57,10 @@ for i = 1:length(ind)
 end
 
 %% calculate stokes parameters
-    
-tmp1    = Pol(:,:,angles(ind)==45) + Pol(:,:,angles(ind)==135);
-tmp2    = Pol(:,:,angles(ind)==0) + Pol(:,:,angles(ind)==90);
-S0      = max(tmp1,tmp2);
 
-S0_max  = max(S0,[],'all');
-S0      = S0./S0_max;
-
+S0 = sum(Pol(:,:,[ismember(angles(ind),[0,90])]),3);
 S1 = Pol(:,:,angles(ind)==0) - Pol(:,:,angles(ind)==90);
-S1 = S1./S0_max;
 S2 = Pol(:,:,angles(ind)==45) - Pol(:,:,angles(ind)==135);
-S2 = S2./S0_max;
 
 AoP     = 0.5*atan2d(S2,S1);
 AoP     = mod(AoP,180);
@@ -76,7 +68,7 @@ DoLP    = sqrt((S1.^2) + (S2.^2)) ./ S0;
 
 
 %% plot images
-close all
+% close all
     
 % 1. relative intensity
     sp(1) = figure(1); hold on
@@ -146,48 +138,49 @@ close all
     timestamp = datestr(now,'yymmdd_HHMM');
     save_path = fullfile(pwd,'polFigures',timestamp);
     mkdir(save_path)
+    scale_factor        = 0.32;
     
     fig                 = figure(1);
     set(fig,'color',[1 1 1])
     set(fig, 'InvertHardCopy', 'off');
-    A4_dims_x           = [21];
+    A4_dims_x           = scale_factor*[21];
     fig.PaperUnits      = 'centimeters';
-    fig.PaperPosition   = [0 0 A4_dims_x/2 A4_dims_x/2];
+    fig.PaperPosition   = [0 0 A4_dims_x A4_dims_x];
     figname             = ['1. Relative intensity'];
     filename            = fullfile(save_path,figname);
-    saveas(fig,[filename,'.svg'])
+%     saveas(fig,[filename,'.svg'])
     print(fig,[filename,'.png'], '-dpng','-r300')         
 
     fig                 = figure(2);
     set(fig,'color',[1 1 1])
     set(fig, 'InvertHardCopy', 'off'); 
-    A4_dims_x           = [21];
+    A4_dims_x           = scale_factor*[21];
     fig.PaperUnits      = 'centimeters';
-    fig.PaperPosition   = [0 0 A4_dims_x/2 A4_dims_x/2];
+    fig.PaperPosition   = [0 0 A4_dims_x A4_dims_x];
     figname             = ['2. DoLP'];
     filename            = fullfile(save_path,figname);
-    saveas(fig,[filename,'.svg'])
+%     saveas(fig,[filename,'.svg'])
     print(fig,[filename,'.png'], '-dpng','-r300')         
 
     fig                 = figure(3);
     set(fig,'color',[1 1 1])
     set(fig, 'InvertHardCopy', 'off'); 
-    A4_dims_x           = [21];
+    A4_dims_x           = scale_factor*[21];
     fig.PaperUnits      = 'centimeters';
-    fig.PaperPosition   = [0 0 A4_dims_x/2 A4_dims_x/2];
+    fig.PaperPosition   = [0 0 A4_dims_x A4_dims_x];
     figname             = ['3. AoP'];
     filename            = fullfile(save_path,figname);
-    saveas(fig,[filename,'.svg'])
+%     saveas(fig,[filename,'.svg'])
     print(fig,[filename,'.png'], '-dpng','-r300')         
 
     fig                 = figure(4);
     set(fig,'color',[1 1 1])
     set(fig, 'InvertHardCopy', 'off');
-    A4_dims_x           = [21];
+    A4_dims_x           = scale_factor*[21];
     fig.PaperUnits      = 'centimeters';
-    fig.PaperPosition   = [0 0 A4_dims_x/2 A4_dims_x/2];
+    fig.PaperPosition   = [0 0 A4_dims_x A4_dims_x];
     figname             = ['4. weighted AoP'];
     filename            = fullfile(save_path,figname);
-    saveas(fig,[filename,'.svg'])
+%     saveas(fig,[filename,'.svg'])
     print(fig,[filename,'.png'], '-dpng','-r300')
 
